@@ -54,6 +54,7 @@ X_test = sc.transform(X_test)
 import keras
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.layers import Dropout
 
 # Create the sequence of layers to init ANN
 classifier = Sequential()
@@ -67,8 +68,12 @@ classifier = Sequential()
 # Input dim is the number of independent variables
 classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
 
+# p is the percentage of neurons to drop-out
+classifier.add(Dropout(p = 0.1))
+
 # Second hidden layer
 classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+classifier.add(Dropout(p = 0.1))
 
 # Output layer
 # Units = 1 because there's only one output (if the customer exited or not)
@@ -93,6 +98,36 @@ y_pred = classifier.predict(X_test)
 y_pred = (y_pred > 0.5)
 
 # Making the Confusion Matrix
+# Tells how many predicted rows were accurate/inaccurate
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
-print(cm)
+
+# Evaluate the ANN - K-Fold Cross Validation
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import cross_val_score
+
+# Builds the ANN classifier
+def build_classifier():
+    classifier = Sequential()
+    classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+    classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+    classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
+    classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    
+    return classifier
+
+classifier = KerasClassifier(build_fn = build_classifier, batch_size = 10, nb_epoch = 100)
+
+# Returns 10 accuracies from K-Fold Cross Validation
+# CV is the number of folds. Usually 10 is used.
+# n_jobs is the number of CPUs to use. -1 is all.
+accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10, n_jobs = -1)
+
+# Compute the mean and variance to determine the bias-variance trade-off
+mean = accuracies.mean()
+variance = accuracies.std()
+
+print("Mean, variance = ", mean, variance)
+
+# Drop out regularization
+# Randomly drops out neurons to prevent neurons from being too relient on each other, thus preventing overfitting
