@@ -59,19 +59,40 @@ from keras.layers import Dense
 classifier = Sequential()
 
 # Add the input layer
-# Output dim is the number of nodes in the hidden layer (better to use k-fold cross validation)
-# Can use number nodes of input layer (11) + nodes in output layer (1) and avg them = 6
+# Units is the number of nodes in the hidden layer (better to use k-fold cross validation)
+# But you can use number nodes of input layer (11) + nodes in output layer (1) and avg them = 6
+# kernel_initializer is for randomly initialize the weights according to a uniform distribution
 
-# Init is for randomly initialize the weights according to a uniform distribution
+# First hidden layer
 # Input dim is the number of independent variables
 classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
 
-# # Fitting classifier to the Training set
-# # Create your classifier here
+# Second hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
 
-# # Predicting the Test set results
-# y_pred = classifier.predict(X_test)
+# Output layer
+# Units = 1 because there's only one output (if the customer exited or not)
+# Use Softmax if you're dealing with a dependent variable with more than one category and units = # of categories
+classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
 
-# # Making the Confusion Matrix
-# from sklearn.metrics import confusion_matrix
-# cm = confusion_matrix(y_test, y_pred)
+# Compiling the ANN
+# Adam is a type of stochastic gradient descent algorithms
+# Stochastic gradient descent is a loss function that is based on the sum of square errors
+# When you use the sigmoid activation function you have to use a logarithmic loss function
+# If you have two outcomes you use binary cross entropy
+# Accuracy metrics helps improve the performance of the ANN
+classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+# Fitting classifier to the Training set
+classifier.fit(X_train, y_train, batch_size = 10, nb_epoch = 100)
+
+# Predicting the Test set results
+y_pred = classifier.predict(X_test)
+
+# If the y_pred is larger than 0.5, True, otherwise False
+y_pred = (y_pred > 0.5)
+
+# Making the Confusion Matrix
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
