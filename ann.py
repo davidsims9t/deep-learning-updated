@@ -131,3 +131,24 @@ print("Mean, variance = ", mean, variance)
 
 # Drop out regularization
 # Randomly drops out neurons to prevent neurons from being too relient on each other, thus preventing overfitting
+
+# Tuning the ANN
+from sklearn.model_selection import GridSearchCV
+
+def build_classifier():
+    classifier = Sequential()
+    classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+    classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+    classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
+    classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    
+    return classifier
+
+classifier = KerasClassifier(build_fn = build_classifier)
+parameters = {
+    'batch_size': [25, 32],
+    'nb_epoch': [100, 500],
+    'optimizer': ['adam', 'rmsprop']
+}
+
+grid_search = GridSearchCV(estimator = classifier)
