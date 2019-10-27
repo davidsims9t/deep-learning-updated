@@ -21,6 +21,11 @@ classifier.add(Conv2D(32, (3, 3), input_shape=(64, 64, 3), activation='relu'))
 # Reduces time complexity and less compute intensive
 classifier.add(MaxPooling2D(pool_size=(2, 2)))
 
+# Adding a second convolutional layer
+# Input shape isn't needed because it's already been transformed
+classifier.add(Conv2D(32, (3, 3), activation='relu'))
+classifier.add(MaxPooling2D(pool_size=(2, 2)))
+
 # Step 3 - Flattening
 # Takes all the pooled layers and flattens them into a single vector
 # Becomes the input layer for an ANN
